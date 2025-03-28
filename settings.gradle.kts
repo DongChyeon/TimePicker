@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "TimePicker"
 include(":app")
+include(":timepicker")
