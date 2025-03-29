@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +43,7 @@ internal fun PickerItem(
     textModifier: Modifier = Modifier,
     infiniteScroll: Boolean = true,
     textStyle: TextStyle,
+    textColor: Color,
     itemSpacing: Dp,
     onValueChange: (String) -> Unit
 ) {
@@ -136,7 +138,7 @@ internal fun PickerItem(
                     text = getItemForIndex(index, items, infiniteScroll, visibleItemsMiddle),
                     maxLines = 1,
                     style = textStyle,
-                    color = Color.White.copy(alpha = alpha),
+                    color = textColor.copy(alpha = alpha),
                     modifier = Modifier
                         .padding(vertical = itemSpacing / 2)
                         .graphicsLayer(scaleY = scaleY)
@@ -177,7 +179,8 @@ private fun PickerItemPreview() {
         items = (0..100).map { it.toString() },
         state = rememberPickerState(),
         visibleItemsCount = 5,
-        textStyle = TextStyle.Default,
+        textStyle = MaterialTheme.typography.bodyLarge,
+        textColor = Color.White,
         itemSpacing = 8.dp,
         onValueChange = {}
     )
