@@ -11,6 +11,8 @@ composeBom = "2024.04.01"
 appcompat = "1.7.0"
 material = "1.12.0"
 ktlint = "11.5.1"
+foundationAndroid = "1.7.8"
+kotlinxDateTime = "0.6.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,6 +31,8 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-foundation-android = { group = "androidx.compose.foundation", name = "foundation-android", version.ref = "foundationAndroid" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDateTime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
