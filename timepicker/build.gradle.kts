@@ -59,7 +59,7 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates("io.github.dongchyeon", "time-picker", "1.0.0")
+    coordinates("io.github.dongchyeon", "time-picker", "1.0.1")
 
     pom {
         name.set("TimePicker")
