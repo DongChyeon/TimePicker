@@ -2,6 +2,7 @@ package com.dongchyeon.timepicker
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,6 +63,7 @@ fun TimePicker(
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     is24HourFormat: Boolean = false,
     timeFormat: TimeFormat = TimeFormat.ENGLISH,
+    selector: PickerSelector = TimePickerDefaults.pickerSelector(),
     onValueChange: (LocalTime) -> Unit
 ) {
     if (is24HourFormat) {
@@ -72,6 +74,7 @@ fun TimePicker(
             textStyle = textStyle,
             textColor = textColor,
             initialTime = initialTime,
+            selector = selector,
             onValueChange = onValueChange
         )
     } else {
@@ -83,6 +86,7 @@ fun TimePicker(
             textColor = textColor,
             initialTime = initialTime,
             timeFormat = timeFormat,
+            selector = selector,
             onValueChange = onValueChange
         )
     }
@@ -97,6 +101,7 @@ private fun TimePicker12Hour(
     textColor: Color = Color.White,
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     timeFormat: TimeFormat,
+    selector: PickerSelector,
     onValueChange: (LocalTime) -> Unit
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
@@ -146,7 +151,20 @@ private fun TimePicker12Hour(
                                 .align(Alignment.Center)
                                 .padding(horizontal = 20.dp)
                                 .height(with(LocalDensity.current) { textStyle.lineHeight.toDp() } + 20.dp)
-                                .background(Color.Gray, shape = RoundedCornerShape(12.dp))
+                                .background(
+                                    color = selector.color,
+                                    shape = selector.shape
+                                )
+                                .then(
+                                    if (selector.border != null) {
+                                        Modifier.border(
+                                            border = selector.border,
+                                            shape = selector.shape
+                                        )
+                                    } else {
+                                        Modifier
+                                    }
+                                )
                         )
 
                         Row(
@@ -249,6 +267,7 @@ private fun TimePicker24Hour(
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     textColor: Color = Color.White,
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
+    selector: PickerSelector,
     onValueChange: (LocalTime) -> Unit
 ) {
     val hourItems = remember { (1..23).map { it.toString() } }
@@ -284,7 +303,20 @@ private fun TimePicker24Hour(
                                 .align(Alignment.Center)
                                 .padding(horizontal = 20.dp)
                                 .height(with(LocalDensity.current) { textStyle.lineHeight.toDp() } + 20.dp)
-                                .background(Color.Gray, shape = RoundedCornerShape(12.dp))
+                                .background(
+                                    color = selector.color,
+                                    shape = selector.shape
+                                )
+                                .then(
+                                    if (selector.border != null) {
+                                        Modifier.border(
+                                            border = selector.border,
+                                            shape = selector.shape
+                                        )
+                                    } else {
+                                        Modifier
+                                    }
+                                )
                         )
 
                         Row(
@@ -409,7 +441,11 @@ private fun TimePickerPreview() {
         }
 
         TimePicker(
-            is24HourFormat = false
+            is24HourFormat = false,
+            selector = TimePickerDefaults.pickerSelector(
+                color = Color.Gray.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(16.dp)
+            )
         ) { newTime ->
             Log.d("TimePicker", "Selected Time: $newTime")
         }
