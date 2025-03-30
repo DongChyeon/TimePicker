@@ -35,6 +35,8 @@ object TimePickerDefaults {
             color = color
         )
     }
+
+    val timeFormat: TimeFormat = TimeFormat.DEFAULT
 }
 
 @Immutable
@@ -72,5 +74,28 @@ class ItemLabel(
             style = style,
             color = color
         )
+    }
+}
+
+enum class TimeFormat(val is24Hour: Boolean, val localeTimeFormat: LocaleTimeFormat) {
+    DEFAULT(false, LocaleTimeFormat.ENGLISH),
+    TWELVE_HOUR(false, LocaleTimeFormat.ENGLISH),
+    TWELVE_HOUR_KOREAN(false, LocaleTimeFormat.KOREAN),
+    TWENTY_FOUR_HOUR(true, LocaleTimeFormat.ENGLISH);
+}
+
+enum class LocaleTimeFormat {
+    ENGLISH, KOREAN
+}
+
+enum class TimePeriod(private val englishLabel: String, private val koreanLabel: String) {
+    AM("AM", "오전"),
+    PM("PM", "오후");
+
+    fun getLabel(localeTimeFormat: LocaleTimeFormat): String {
+        return when (localeTimeFormat) {
+            LocaleTimeFormat.ENGLISH -> englishLabel
+            LocaleTimeFormat.KOREAN -> koreanLabel
+        }
     }
 }

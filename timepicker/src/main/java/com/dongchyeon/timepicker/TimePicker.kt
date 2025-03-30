@@ -37,22 +37,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.util.Locale
 
-enum class TimeFormat {
-    ENGLISH, KOREAN
-}
-
-enum class TimePeriod(private val englishLabel: String, private val koreanLabel: String) {
-    AM("AM", "오전"),
-    PM("PM", "오후");
-
-    fun getLabel(timeFormat: TimeFormat): String {
-        return when (timeFormat) {
-            TimeFormat.ENGLISH -> englishLabel
-            TimeFormat.KOREAN -> koreanLabel
-        }
-    }
-}
-
 @Composable
 fun TimePicker(
     modifier: Modifier = Modifier,
@@ -60,12 +44,11 @@ fun TimePicker(
     visibleItemsCount: Int = 5,
     itemLabel: ItemLabel = TimePickerDefaults.itemLabel(),
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
-    is24HourFormat: Boolean = false,
-    timeFormat: TimeFormat = TimeFormat.ENGLISH,
+    timeFormat: TimeFormat = TimePickerDefaults.timeFormat,
     selector: PickerSelector = TimePickerDefaults.pickerSelector(),
     onValueChange: (LocalTime) -> Unit
 ) {
-    if (is24HourFormat) {
+    if (timeFormat.is24Hour) {
         TimePicker24Hour(
             modifier = modifier,
             itemSpacing = itemSpacing,
@@ -84,7 +67,7 @@ fun TimePicker(
             textStyle = itemLabel.style,
             textColor = itemLabel.color,
             initialTime = initialTime,
-            timeFormat = timeFormat,
+            localeTimeFormat = timeFormat.localeTimeFormat,
             selector = selector,
             onValueChange = onValueChange
         )
@@ -99,7 +82,7 @@ private fun TimePicker12Hour(
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     textColor: Color = Color.White,
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
-    timeFormat: TimeFormat,
+    localeTimeFormat: LocaleTimeFormat,
     selector: PickerSelector,
     onValueChange: (LocalTime) -> Unit
 ) {
@@ -117,8 +100,8 @@ private fun TimePicker12Hour(
                 ) {
                     val amPmItems = remember {
                         listOf(
-                            TimePeriod.AM.getLabel(timeFormat),
-                            TimePeriod.PM.getLabel(timeFormat)
+                            TimePeriod.AM.getLabel(localeTimeFormat),
+                            TimePeriod.PM.getLabel(localeTimeFormat)
                         )
                     }
                     val hourItems = remember { (1..12).map { it.toString() } }
@@ -187,7 +170,7 @@ private fun TimePicker12Hour(
                                         amPmPickerState,
                                         hourPickerState,
                                         minutePickerState,
-                                        timeFormat,
+                                        localeTimeFormat,
                                         onValueChange
                                     )
                                 }
@@ -208,7 +191,7 @@ private fun TimePicker12Hour(
                                         amPmPickerState,
                                         hourPickerState,
                                         minutePickerState,
-                                        timeFormat,
+                                        localeTimeFormat,
                                         onValueChange
                                     )
 
@@ -245,7 +228,7 @@ private fun TimePicker12Hour(
                                         amPmPickerState,
                                         hourPickerState,
                                         minutePickerState,
-                                        timeFormat,
+                                        localeTimeFormat,
                                         onValueChange
                                     )
                                 }
@@ -379,27 +362,27 @@ private fun onPickerValueChange(
     amPmState: PickerState,
     hourState: PickerState,
     minuteState: PickerState,
-    timeFormat: TimeFormat,
+    localeTimeFormat: LocaleTimeFormat,
     onValueChange: (LocalTime) -> Unit
 ) {
     val amPm = amPmState.selectedItem
     val hour = hourState.selectedItem.toIntOrNull() ?: 0
     val minute = minuteState.selectedItem.toIntOrNull() ?: 0
 
-    val adjustedHour = when (timeFormat) {
-        TimeFormat.ENGLISH -> {
-            if (amPm == TimePeriod.AM.getLabel(TimeFormat.ENGLISH) && hour == 12) {
+    val adjustedHour = when (localeTimeFormat) {
+        LocaleTimeFormat.ENGLISH -> {
+            if (amPm == TimePeriod.AM.getLabel(LocaleTimeFormat.ENGLISH) && hour == 12) {
                 0
-            } else if (amPm == TimePeriod.PM.getLabel(TimeFormat.ENGLISH) && hour != 12) {
+            } else if (amPm == TimePeriod.PM.getLabel(LocaleTimeFormat.ENGLISH) && hour != 12) {
                 hour + 12
             } else {
                 hour
             }
         }
-        TimeFormat.KOREAN -> {
-            if (amPm == TimePeriod.AM.getLabel(TimeFormat.KOREAN) && hour == 12) {
+        LocaleTimeFormat.KOREAN -> {
+            if (amPm == TimePeriod.AM.getLabel(LocaleTimeFormat.KOREAN) && hour == 12) {
                 0
-            } else if (amPm == TimePeriod.PM.getLabel(TimeFormat.KOREAN) && hour != 12) {
+            } else if (amPm == TimePeriod.PM.getLabel(LocaleTimeFormat.KOREAN) && hour != 12) {
                 hour + 12
             } else {
                 hour
@@ -434,17 +417,17 @@ private fun TimePickerPreview() {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         TimePicker(
-            is24HourFormat = true
+            timeFormat = TimeFormat.TWENTY_FOUR_HOUR
         ) { newTime ->
             Log.d("TimePicker", "Selected Time: $newTime")
         }
 
         TimePicker(
-            is24HourFormat = false,
             selector = TimePickerDefaults.pickerSelector(
                 color = Color.Gray.copy(alpha = 0.4f),
                 shape = RoundedCornerShape(16.dp)
-            )
+            ),
+            timeFormat = TimeFormat.TWELVE_HOUR_KOREAN
         ) { newTime ->
             Log.d("TimePicker", "Selected Time: $newTime")
         }
