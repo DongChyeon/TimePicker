@@ -36,6 +36,22 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.util.Locale
 
+enum class TimeFormat {
+    ENGLISH, KOREAN
+}
+
+enum class TimePeriod(private val englishLabel: String, private val koreanLabel: String) {
+    AM("AM", "오전"),
+    PM("PM", "오후");
+
+    fun getLabel(timeFormat: TimeFormat): String {
+        return when (timeFormat) {
+            TimeFormat.ENGLISH -> englishLabel
+            TimeFormat.KOREAN -> koreanLabel
+        }
+    }
+}
+
 @Composable
 fun TimePicker(
     modifier: Modifier = Modifier,
@@ -45,6 +61,7 @@ fun TimePicker(
     textColor: Color = Color.White,
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     is24HourFormat: Boolean = false,
+    timeFormat: TimeFormat = TimeFormat.ENGLISH,
     onValueChange: (LocalTime) -> Unit
 ) {
     if (is24HourFormat) {
@@ -65,6 +82,7 @@ fun TimePicker(
             textStyle = textStyle,
             textColor = textColor,
             initialTime = initialTime,
+            timeFormat = timeFormat,
             onValueChange = onValueChange
         )
     }
@@ -78,6 +96,7 @@ private fun TimePicker12Hour(
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     textColor: Color = Color.White,
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
+    timeFormat: TimeFormat,
     onValueChange: (LocalTime) -> Unit
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
@@ -92,12 +111,17 @@ private fun TimePicker12Hour(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    val amPmItems = remember { listOf("AM", "PM") }
+                    val amPmItems = remember {
+                        listOf(
+                            TimePeriod.AM.getLabel(timeFormat),
+                            TimePeriod.PM.getLabel(timeFormat)
+                        )
+                    }
                     val hourItems = remember { (1..12).map { it.toString() } }
                     val minuteItems = remember { (0..59).map { String.format(Locale.ROOT, "%02d", it) } }
 
                     val amPmPickerState = rememberPickerState(
-                        selectedItem = amPmItems.indexOf(if (initialTime.hour < 12) "AM" else "PM").toString(),
+                        selectedItem = amPmItems.indexOf(if (initialTime.hour < 12) amPmItems[0] else amPmItems[1]).toString(),
                         startIndex = if (initialTime.hour < 12) 0 else 1
                     )
                     val hourPickerState = rememberPickerState(
@@ -146,6 +170,7 @@ private fun TimePicker12Hour(
                                         amPmPickerState,
                                         hourPickerState,
                                         minutePickerState,
+                                        timeFormat,
                                         onValueChange
                                     )
                                 }
@@ -166,6 +191,7 @@ private fun TimePicker12Hour(
                                         amPmPickerState,
                                         hourPickerState,
                                         minutePickerState,
+                                        timeFormat,
                                         onValueChange
                                     )
 
@@ -202,6 +228,7 @@ private fun TimePicker12Hour(
                                         amPmPickerState,
                                         hourPickerState,
                                         minutePickerState,
+                                        timeFormat,
                                         onValueChange
                                     )
                                 }
@@ -321,18 +348,32 @@ private fun onPickerValueChange(
     amPmState: PickerState,
     hourState: PickerState,
     minuteState: PickerState,
+    timeFormat: TimeFormat,
     onValueChange: (LocalTime) -> Unit
 ) {
     val amPm = amPmState.selectedItem
     val hour = hourState.selectedItem.toIntOrNull() ?: 0
     val minute = minuteState.selectedItem.toIntOrNull() ?: 0
 
-    val adjustedHour = if (amPm == "AM" && hour == 12) {
-        0
-    } else if (amPm == "PM" && hour != 12) {
-        hour + 12
-    } else {
-        hour
+    val adjustedHour = when (timeFormat) {
+        TimeFormat.ENGLISH -> {
+            if (amPm == TimePeriod.AM.getLabel(TimeFormat.ENGLISH) && hour == 12) {
+                0
+            } else if (amPm == TimePeriod.PM.getLabel(TimeFormat.ENGLISH) && hour != 12) {
+                hour + 12
+            } else {
+                hour
+            }
+        }
+        TimeFormat.KOREAN -> {
+            if (amPm == TimePeriod.AM.getLabel(TimeFormat.KOREAN) && hour == 12) {
+                0
+            } else if (amPm == TimePeriod.PM.getLabel(TimeFormat.KOREAN) && hour != 12) {
+                hour + 12
+            } else {
+                hour
+            }
+        }
     }
 
     val newTime = LocalTime(adjustedHour, minute)
