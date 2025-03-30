@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.dongchyeon.timepicker"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.dongchyeon.timepicker"

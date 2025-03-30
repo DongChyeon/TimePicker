@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.dongchyeon.timepicker"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
