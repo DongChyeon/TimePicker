@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 object TimePickerDefaults {
@@ -21,6 +22,17 @@ object TimePickerDefaults {
             shape = shape,
             color = color,
             border = border
+        )
+    }
+
+    @Composable
+    fun itemLabel(
+        style: TextStyle = MaterialTheme.typography.titleMedium,
+        color: Color = Color.White
+    ): ItemLabel {
+        return ItemLabel(
+            style = style,
+            color = color
         )
     }
 }
@@ -43,6 +55,22 @@ class PickerSelector(
             shape = shape,
             color = color,
             border = border
+        )
+    }
+}
+
+@Immutable
+class ItemLabel(
+    val style: TextStyle,
+    val color: Color
+) {
+    fun copy(
+        style: TextStyle = this.style,
+        color: Color = this.color
+    ): ItemLabel {
+        return ItemLabel(
+            style = style,
+            color = color
         )
     }
 }
