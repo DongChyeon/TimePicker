@@ -41,7 +41,7 @@ import java.util.Locale
 fun TimePicker(
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 2.dp,
-    visibleItemsCount: Int = 5,
+    visibleItemsCount: Int = TimePickerDefaults.visibleItemsCount,
     itemLabel: ItemLabel = TimePickerDefaults.itemLabel(),
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     timeFormat: TimeFormat = TimePickerDefaults.timeFormat,
@@ -427,6 +427,7 @@ private fun TimePickerPreview() {
                 color = Color.Gray.copy(alpha = 0.4f),
                 shape = RoundedCornerShape(16.dp)
             ),
+            visibleItemsCount = 7,
             timeFormat = TimeFormat.TWELVE_HOUR_KOREAN
         ) { newTime ->
             Log.d("TimePicker", "Selected Time: $newTime")

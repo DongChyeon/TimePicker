@@ -37,6 +37,7 @@ object TimePickerDefaults {
     }
 
     val timeFormat: TimeFormat = TimeFormat.DEFAULT
+    val visibleItemsCount: Int = 5
 }
 
 @Immutable
