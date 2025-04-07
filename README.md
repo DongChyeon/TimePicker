@@ -3,6 +3,8 @@
 
 ## Time Picker - A customizable Jetpack Compose time picker.
 
+![Main Image](https://github.com/user-attachments/assets/033e6afc-d8bf-4492-9d73-57aa37e7db66)
+
 A fully customizable time picker component for Jetpack Compose.<br>
 It supports both 12-hour and 24-hour formats.<br>
 This library allows you to configure various visual aspects like the style of hours, minutes, and AM/PM labels.<br>
