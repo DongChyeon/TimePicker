@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -116,7 +117,8 @@ internal fun PickerItem(
                 .pointerInput(Unit) { detectVerticalDragGestures { change, _ -> change.consume() } }
         ) {
             items(listScrollCount, key = { index -> index }) { index ->
-                val layoutInfo = listState.layoutInfo
+                val layoutInfo by remember { derivedStateOf { listState.layoutInfo } }
+
                 val viewportCenterOffset = layoutInfo.viewportStartOffset +
                     (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2
 
