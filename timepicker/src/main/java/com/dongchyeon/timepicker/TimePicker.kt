@@ -254,7 +254,7 @@ private fun TimePicker24Hour(
     selector: PickerSelector,
     onValueChange: (LocalTime) -> Unit
 ) {
-    val hourItems = remember { (1..23).toList() }
+    val hourItems = remember { (0..23).toList() }
     val minuteItems = remember { (0..59).toList() }
 
     val hourPickerState = rememberPickerState(
