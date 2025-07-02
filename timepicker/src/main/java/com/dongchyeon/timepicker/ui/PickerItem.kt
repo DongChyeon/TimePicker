@@ -86,19 +86,20 @@ internal fun <T> PickerItem(
                     abs(itemCenter - centerOffset)
                 }?.index
             }
-            .distinctUntilChanged()
-            .collect { centerIndex ->
-                if (centerIndex != null) {
-                    val adjustedIndex = if (infiniteScroll) {
-                        centerIndex % items.size
+            .map { centerIndex ->
+                centerIndex?.let { index ->
+                    if (infiniteScroll) {
+                        index % items.size
                     } else {
-                        centerIndex - visibleItemsMiddle
-                    }.coerceIn(0, items.size - 1)
-
-                    if (adjustedIndex != state.selectedIndex.value) {
-                        state.updateSelectedIndex(adjustedIndex)
-                        onValueChange(items[adjustedIndex])
+                        (index - visibleItemsMiddle).coerceIn(0, items.size - 1)
                     }
+                }
+            }
+            .distinctUntilChanged()
+            .collect { adjustedIndex ->
+                if (adjustedIndex != null && adjustedIndex != state.selectedIndex.value) {
+                    state.updateSelectedIndex(adjustedIndex)
+                    onValueChange(items[adjustedIndex])
                 }
             }
     }
