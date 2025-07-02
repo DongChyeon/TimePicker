@@ -135,8 +135,15 @@ internal fun <T> PickerItem(
 
                 val scaleY = 1f - (0.2f * (distanceFromCenter / maxDistance)).coerceIn(0f, 0.4f)
 
+                val item = getItemForIndex(
+                    index = index,
+                    items = items,
+                    infiniteScroll = infiniteScroll,
+                    visibleItemsMiddle = visibleItemsMiddle
+                )
+
                 Text(
-                    text = itemFormatter(getItemForIndex(index, items, infiniteScroll, visibleItemsMiddle)),
+                    text = item?.let { itemFormatter(it) } ?: "",
                     maxLines = 1,
                     style = textStyle,
                     color = textColor.copy(alpha = alpha),
@@ -156,13 +163,13 @@ private fun <T> getItemForIndex(
     items: List<T>,
     infiniteScroll: Boolean,
     visibleItemsMiddle: Int
-): T {
+): T? {
     require(items.isNotEmpty()) { "Items list cannot be empty." }
 
     return if (!infiniteScroll) {
-        items.getOrNull(index - visibleItemsMiddle) ?: items.first()
+        items.getOrNull(index - visibleItemsMiddle)
     } else {
-        items.getOrNull(index % items.size) ?: items.first()
+        items.getOrNull(index % items.size)
     }
 }
 
