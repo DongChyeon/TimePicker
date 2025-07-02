@@ -108,16 +108,16 @@ private fun TimePicker12Hour(
                     val minuteItems = remember { (0..59).map { String.format(Locale.ROOT, "%02d", it) } }
 
                     val amPmPickerState = rememberPickerState(
-                        selectedItem = amPmItems.indexOf(if (initialTime.hour < 12) amPmItems[0] else amPmItems[1]).toString(),
-                        startIndex = if (initialTime.hour < 12) 0 else 1
+                        initialIndex = if (initialTime.hour < 12) 0 else 1,
+                        items = amPmItems
                     )
                     val hourPickerState = rememberPickerState(
-                        selectedItem = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString()).toString(),
-                        startIndex = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString())
+                        initialIndex = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString()),
+                        items = hourItems
                     )
                     val minutePickerState = rememberPickerState(
-                        selectedItem = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0')).toString(),
-                        startIndex = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0'))
+                        initialIndex = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0')),
+                        items = minuteItems
                     )
 
                     var previousHour by remember { mutableIntStateOf(initialTime.hour) }
@@ -256,12 +256,12 @@ private fun TimePicker24Hour(
     val minuteItems = remember { (0..59).map { String.format(Locale.ROOT, "%02d", it) } }
 
     val hourPickerState = rememberPickerState(
-        selectedItem = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString()).toString(),
-        startIndex = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString())
+        initialIndex = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString()),
+        items = hourItems
     )
     val minutePickerState = rememberPickerState(
-        selectedItem = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0')).toString(),
-        startIndex = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0'))
+        initialIndex = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0')),
+        items = minuteItems
     )
 
     Box(modifier = modifier.fillMaxWidth()) {

@@ -57,8 +57,8 @@ internal fun PickerItem(
     var itemHeightPixels by remember { mutableIntStateOf(0) }
     val itemHeightDp = with(LocalDensity.current) { itemHeightPixels.toDp() }
 
-    LaunchedEffect(state.startIndex) {
-        val safeStartIndex = state.startIndex
+    LaunchedEffect(state.selectedIndex.value) {
+        val safeStartIndex = state.selectedIndex.value
         val listStartIndex = if (infiniteScroll) {
             getStartIndexForInfiniteScroll(itemHeightPixels, listScrollMiddle, visibleItemsMiddle, safeStartIndex)
         } else {
@@ -67,9 +67,9 @@ internal fun PickerItem(
         listState.scrollToItem(listStartIndex, 0)
 
         if (!infiniteScroll) {
-            val selectedItem = items.getOrNull(safeStartIndex) ?: ""
-            if (selectedItem != state.selectedItem) {
-                state.selectedItem = selectedItem
+            val selectedItem = items.getOrNull(listStartIndex) ?: ""
+            if (listStartIndex != state.selectedIndex.value) {
+                state.updateSelectedIndex(listStartIndex)
                 onValueChange(selectedItem)
             }
         }
@@ -94,11 +94,9 @@ internal fun PickerItem(
                         centerIndex - visibleItemsMiddle
                     }.coerceIn(0, items.size - 1)
 
-                    val newValue = items[adjustedIndex]
-
-                    if (newValue != state.selectedItem) {
-                        state.selectedItem = newValue
-                        onValueChange(newValue)
+                    if (adjustedIndex != state.selectedIndex.value) {
+                        state.updateSelectedIndex(adjustedIndex)
+                        onValueChange(items[adjustedIndex])
                     }
                 }
             }
