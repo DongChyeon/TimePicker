@@ -7,17 +7,17 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class PickerState(
+class PickerState<T>(
     val lazyListState: LazyListState,
     initialIndex: Int,
-    private val items: List<String>
+    private val items: List<T>
 ) {
     private val _selectedIndex = MutableStateFlow(initialIndex)
     val selectedIndex: StateFlow<Int>
         get() = _selectedIndex
 
-    val selectedItem: String
-        get() = items.getOrElse(_selectedIndex.value) { "" }
+    val selectedItem: T
+        get() = items.getOrElse(_selectedIndex.value) { items.first() }
 
     fun updateSelectedIndex(newIndex: Int) {
         _selectedIndex.value = newIndex.coerceIn(0, items.size - 1)
@@ -25,8 +25,8 @@ class PickerState(
 }
 
 @Composable
-fun rememberPickerState(
+fun <T> rememberPickerState(
     lazyListState: LazyListState = rememberLazyListState(),
     initialIndex: Int = 0,
-    items: List<String> = emptyList()
-): PickerState = remember { PickerState(lazyListState, initialIndex, items) }
+    items: List<T>
+): PickerState<T> = remember { PickerState(lazyListState, initialIndex, items) }

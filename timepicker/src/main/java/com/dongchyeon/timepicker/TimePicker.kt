@@ -35,7 +35,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import java.util.Locale
 
 @Composable
 fun TimePicker(
@@ -104,19 +103,19 @@ private fun TimePicker12Hour(
                             TimePeriod.PM.getLabel(localeTimeFormat)
                         )
                     }
-                    val hourItems = remember { (1..12).map { it.toString() } }
-                    val minuteItems = remember { (0..59).map { String.format(Locale.ROOT, "%02d", it) } }
+                    val hourItems = remember { (1..12).toList() }
+                    val minuteItems = remember { (0..59).toList() }
 
                     val amPmPickerState = rememberPickerState(
                         initialIndex = if (initialTime.hour < 12) 0 else 1,
                         items = amPmItems
                     )
                     val hourPickerState = rememberPickerState(
-                        initialIndex = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString()),
+                        initialIndex = hourItems.indexOf(if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12),
                         items = hourItems
                     )
                     val minutePickerState = rememberPickerState(
-                        initialIndex = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0')),
+                        initialIndex = minuteItems.indexOf(initialTime.minute),
                         items = minuteItems
                     )
 
@@ -196,7 +195,7 @@ private fun TimePicker12Hour(
                                     )
 
                                     scope.launch {
-                                        val currentHour = hourPickerState.selectedItem.toIntOrNull() ?: 0
+                                        val currentHour = hourPickerState.selectedItem
 
                                         if (currentHour == 12 && previousHour == 11) {
                                             val currentIndex = amPmPickerState.lazyListState.firstVisibleItemIndex % amPmItems.size
@@ -223,6 +222,9 @@ private fun TimePicker12Hour(
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
+                                itemFormatter = { item ->
+                                    item.toString().padStart(2, '0')
+                                },
                                 onValueChange = {
                                     onPickerValueChange(
                                         amPmPickerState,
@@ -252,15 +254,15 @@ private fun TimePicker24Hour(
     selector: PickerSelector,
     onValueChange: (LocalTime) -> Unit
 ) {
-    val hourItems = remember { (1..23).map { it.toString() } }
-    val minuteItems = remember { (0..59).map { String.format(Locale.ROOT, "%02d", it) } }
+    val hourItems = remember { (1..23).toList() }
+    val minuteItems = remember { (0..59).toList() }
 
     val hourPickerState = rememberPickerState(
-        initialIndex = hourItems.indexOf((if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12).toString()),
+        initialIndex = hourItems.indexOf(if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12),
         items = hourItems
     )
     val minutePickerState = rememberPickerState(
-        initialIndex = minuteItems.indexOf(initialTime.minute.toString().padStart(2, '0')),
+        initialIndex = minuteItems.indexOf(initialTime.minute),
         items = minuteItems
     )
 
@@ -342,6 +344,9 @@ private fun TimePicker24Hour(
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
+                                itemFormatter = { item ->
+                                    item.toString().padStart(2, '0')
+                                },
                                 onValueChange = {
                                     onPickerValueChange(
                                         hourPickerState,
@@ -359,15 +364,15 @@ private fun TimePicker24Hour(
 }
 
 private fun onPickerValueChange(
-    amPmState: PickerState,
-    hourState: PickerState,
-    minuteState: PickerState,
+    amPmState: PickerState<String>,
+    hourState: PickerState<Int>,
+    minuteState: PickerState<Int>,
     localeTimeFormat: LocaleTimeFormat,
     onValueChange: (LocalTime) -> Unit
 ) {
     val amPm = amPmState.selectedItem
-    val hour = hourState.selectedItem.toIntOrNull() ?: 0
-    val minute = minuteState.selectedItem.toIntOrNull() ?: 0
+    val hour = hourState.selectedItem
+    val minute = minuteState.selectedItem
 
     val adjustedHour = when (localeTimeFormat) {
         LocaleTimeFormat.ENGLISH -> {
@@ -396,12 +401,12 @@ private fun onPickerValueChange(
 }
 
 private fun onPickerValueChange(
-    hourState: PickerState,
-    minuteState: PickerState,
+    hourState: PickerState<Int>,
+    minuteState: PickerState<Int>,
     onValueChange: (LocalTime) -> Unit
 ) {
-    val hour = hourState.selectedItem.toIntOrNull() ?: 0
-    val minute = minuteState.selectedItem.toIntOrNull() ?: 0
+    val hour = hourState.selectedItem
+    val minute = minuteState.selectedItem
 
     val newTime = LocalTime(hour, minute)
 

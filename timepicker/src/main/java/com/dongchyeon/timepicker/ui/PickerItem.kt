@@ -36,17 +36,18 @@ import kotlinx.coroutines.flow.map
 import kotlin.math.abs
 
 @Composable
-internal fun PickerItem(
+internal fun <T> PickerItem(
     modifier: Modifier = Modifier,
-    items: List<String>,
-    state: PickerState = rememberPickerState(),
+    items: List<T>,
+    state: PickerState<T> = rememberPickerState(items = items),
     visibleItemsCount: Int,
     textModifier: Modifier = Modifier,
     infiniteScroll: Boolean = true,
     textStyle: TextStyle,
     textColor: Color,
     itemSpacing: Dp,
-    onValueChange: (String) -> Unit
+    itemFormatter: (T) -> String = { it.toString() },
+    onValueChange: (T) -> Unit
 ) {
     val visibleItemsMiddle = visibleItemsCount / 2
     val listScrollCount = if (infiniteScroll) Int.MAX_VALUE else items.size + visibleItemsMiddle * 2
@@ -67,7 +68,7 @@ internal fun PickerItem(
         listState.scrollToItem(listStartIndex, 0)
 
         if (!infiniteScroll) {
-            val selectedItem = items.getOrNull(listStartIndex) ?: ""
+            val selectedItem = items.getOrNull(listStartIndex) ?: items.first()
             if (listStartIndex != state.selectedIndex.value) {
                 state.updateSelectedIndex(listStartIndex)
                 onValueChange(selectedItem)
@@ -135,7 +136,7 @@ internal fun PickerItem(
                 val scaleY = 1f - (0.2f * (distanceFromCenter / maxDistance)).coerceIn(0f, 0.4f)
 
                 Text(
-                    text = getItemForIndex(index, items, infiniteScroll, visibleItemsMiddle),
+                    text = itemFormatter(getItemForIndex(index, items, infiniteScroll, visibleItemsMiddle)),
                     maxLines = 1,
                     style = textStyle,
                     color = textColor.copy(alpha = alpha),
@@ -150,16 +151,18 @@ internal fun PickerItem(
     }
 }
 
-private fun getItemForIndex(
+private fun <T> getItemForIndex(
     index: Int,
-    items: List<String>,
+    items: List<T>,
     infiniteScroll: Boolean,
     visibleItemsMiddle: Int
-): String {
+): T {
+    require(items.isNotEmpty()) { "Items list cannot be empty." }
+
     return if (!infiniteScroll) {
-        items.getOrNull(index - visibleItemsMiddle) ?: ""
+        items.getOrNull(index - visibleItemsMiddle) ?: items.first()
     } else {
-        items.getOrNull(index % items.size) ?: ""
+        items.getOrNull(index % items.size) ?: items.first()
     }
 }
 
@@ -175,9 +178,8 @@ private fun getStartIndexForInfiniteScroll(
 @Composable
 @Preview
 private fun PickerItemPreview() {
-    PickerItem(
-        items = (0..100).map { it.toString() },
-        state = rememberPickerState(),
+    PickerItem<Int>(
+        items = (0..100).map { it },
         visibleItemsCount = 5,
         textStyle = MaterialTheme.typography.bodyLarge,
         textColor = Color.White,
