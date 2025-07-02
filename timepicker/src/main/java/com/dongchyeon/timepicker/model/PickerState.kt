@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class PickerState<T>(
     val lazyListState: LazyListState,
-    initialIndex: Int,
+    val initialIndex: Int,
     private val items: List<T>
 ) {
     private val _selectedIndex = MutableStateFlow(initialIndex)

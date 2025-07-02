@@ -58,8 +58,8 @@ internal fun <T> PickerItem(
     var itemHeightPixels by remember { mutableIntStateOf(0) }
     val itemHeightDp = with(LocalDensity.current) { itemHeightPixels.toDp() }
 
-    LaunchedEffect(state.selectedIndex.value) {
-        val safeStartIndex = state.selectedIndex.value
+    LaunchedEffect(state.initialIndex) {
+        val safeStartIndex = state.initialIndex
         val listStartIndex = if (infiniteScroll) {
             getStartIndexForInfiniteScroll(itemHeightPixels, listScrollMiddle, visibleItemsMiddle, safeStartIndex)
         } else {

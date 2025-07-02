@@ -258,7 +258,7 @@ private fun TimePicker24Hour(
     val minuteItems = remember { (0..59).toList() }
 
     val hourPickerState = rememberPickerState(
-        initialIndex = hourItems.indexOf(if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12),
+        initialIndex = hourItems.indexOf(initialTime.hour),
         items = hourItems
     )
     val minutePickerState = rememberPickerState(
