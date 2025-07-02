@@ -71,8 +71,8 @@ internal fun <T> PickerItem(
             val selectedItem = items.getOrNull(listStartIndex) ?: items.first()
             if (listStartIndex != state.selectedIndex.value) {
                 state.updateSelectedIndex(listStartIndex)
-                onValueChange(selectedItem)
             }
+            onValueChange(selectedItem)
         }
     }
 
