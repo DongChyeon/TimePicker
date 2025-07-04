@@ -150,7 +150,7 @@ private fun TimePicker12Hour(
                             PickerItem(
                                 items = amPmItems,
                                 state = amPmPickerState,
-                                visibleItemsCount = 3,
+                                visibleItemsCount = visibleItemsCount,
                                 style = style,
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
