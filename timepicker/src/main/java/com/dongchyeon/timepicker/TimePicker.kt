@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,13 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dongchyeon.timepicker.model.PickerState
 import com.dongchyeon.timepicker.model.rememberPickerState
-import com.dongchyeon.timepicker.ui.CurveEffect
 import com.dongchyeon.timepicker.ui.PickerItem
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -40,23 +36,20 @@ import kotlinx.datetime.toLocalDateTime
 @Composable
 fun TimePicker(
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 2.dp,
-    visibleItemsCount: Int = TimePickerDefaults.visibleItemsCount,
-    itemLabel: ItemLabel = TimePickerDefaults.itemLabel(),
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
+    visibleItemsCount: Int = TimePickerDefaults.visibleItemsCount,
     timeFormat: TimeFormat = TimePickerDefaults.timeFormat,
+    style: PickerStyle = TimePickerDefaults.pickerStyle(),
     selector: PickerSelector = TimePickerDefaults.pickerSelector(),
-    curveEffect: CurveEffect = CurveEffect(),
+    curveEffect: CurveEffect = TimePickerDefaults.curveEffect(),
     onValueChange: (LocalTime) -> Unit
 ) {
     if (timeFormat.is24Hour) {
         TimePicker24Hour(
             modifier = modifier,
-            itemSpacing = itemSpacing,
             visibleItemsCount = visibleItemsCount,
-            textStyle = itemLabel.style,
-            textColor = itemLabel.color,
             initialTime = initialTime,
+            style = style,
             selector = selector,
             curveEffect = curveEffect,
             onValueChange = onValueChange
@@ -64,12 +57,10 @@ fun TimePicker(
     } else {
         TimePicker12Hour(
             modifier = modifier,
-            itemSpacing = itemSpacing,
             visibleItemsCount = visibleItemsCount,
-            textStyle = itemLabel.style,
-            textColor = itemLabel.color,
             initialTime = initialTime,
             localeTimeFormat = timeFormat.localeTimeFormat,
+            style = style,
             selector = selector,
             curveEffect = curveEffect,
             onValueChange = onValueChange
@@ -80,12 +71,10 @@ fun TimePicker(
 @Composable
 private fun TimePicker12Hour(
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 2.dp,
-    visibleItemsCount: Int = 5,
-    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-    textColor: Color = Color.White,
     initialTime: LocalTime,
+    visibleItemsCount: Int,
     localeTimeFormat: LocaleTimeFormat,
+    style: PickerStyle,
     selector: PickerSelector,
     curveEffect: CurveEffect,
     onValueChange: (LocalTime) -> Unit
@@ -135,7 +124,7 @@ private fun TimePicker12Hour(
                                 .fillMaxWidth()
                                 .align(Alignment.Center)
                                 .padding(horizontal = 20.dp)
-                                .height(with(LocalDensity.current) { textStyle.lineHeight.toDp() } + 20.dp)
+                                .height(with(LocalDensity.current) { style.textStyle.lineHeight.toDp() } + 20.dp)
                                 .background(
                                     color = selector.color,
                                     shape = selector.shape
@@ -159,12 +148,10 @@ private fun TimePicker12Hour(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             PickerItem(
-                                state = amPmPickerState,
                                 items = amPmItems,
+                                state = amPmPickerState,
                                 visibleItemsCount = 3,
-                                itemSpacing = itemSpacing,
-                                textStyle = textStyle,
-                                textColor = textColor,
+                                style = style,
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = false,
@@ -181,12 +168,10 @@ private fun TimePicker12Hour(
                             )
 
                             PickerItem(
-                                state = hourPickerState,
                                 items = hourItems,
+                                state = hourPickerState,
                                 visibleItemsCount = visibleItemsCount,
-                                itemSpacing = itemSpacing,
-                                textStyle = textStyle,
-                                textColor = textColor,
+                                style = style,
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
@@ -199,38 +184,30 @@ private fun TimePicker12Hour(
                                         localeTimeFormat,
                                         onValueChange
                                     )
-
                                     scope.launch {
                                         val currentHour = hourPickerState.selectedItem
+                                        val currentIndex = amPmPickerState.lazyListState.firstVisibleItemIndex % amPmItems.size
+                                        val nextIndex = (currentIndex + 1) % amPmItems.size
 
-                                        if (currentHour == 12 && previousHour == 11) {
-                                            val currentIndex = amPmPickerState.lazyListState.firstVisibleItemIndex % amPmItems.size
-                                            val nextIndex = (currentIndex + 1) % amPmItems.size
-                                            amPmPickerState.lazyListState.animateScrollToItem(nextIndex)
-                                        } else if (currentHour == 11 && previousHour == 12) {
-                                            val currentIndex = amPmPickerState.lazyListState.firstVisibleItemIndex % amPmItems.size
-                                            val nextIndex = (currentIndex + 1) % amPmItems.size
+                                        if ((currentHour == 12 && previousHour == 11) ||
+                                            (currentHour == 11 && previousHour == 12)
+                                        ) {
                                             amPmPickerState.lazyListState.animateScrollToItem(nextIndex)
                                         }
-
                                         previousHour = currentHour
                                     }
                                 }
                             )
 
                             PickerItem(
-                                state = minutePickerState,
                                 items = minuteItems,
+                                state = minutePickerState,
                                 visibleItemsCount = visibleItemsCount,
-                                itemSpacing = itemSpacing,
-                                textStyle = textStyle,
-                                textColor = textColor,
+                                style = style,
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
-                                itemFormatter = { item ->
-                                    item.toString().padStart(2, '0')
-                                },
+                                itemFormatter = { it.toString().padStart(2, '0') },
                                 curveEffect = curveEffect,
                                 onValueChange = {
                                     onPickerValueChange(
@@ -253,11 +230,9 @@ private fun TimePicker12Hour(
 @Composable
 private fun TimePicker24Hour(
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 2.dp,
-    visibleItemsCount: Int = 5,
-    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-    textColor: Color = Color.White,
-    initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
+    initialTime: LocalTime,
+    visibleItemsCount: Int,
+    style: PickerStyle,
     selector: PickerSelector,
     curveEffect: CurveEffect,
     onValueChange: (LocalTime) -> Unit
@@ -294,7 +269,7 @@ private fun TimePicker24Hour(
                                 .fillMaxWidth()
                                 .align(Alignment.Center)
                                 .padding(horizontal = 20.dp)
-                                .height(with(LocalDensity.current) { textStyle.lineHeight.toDp() } + 20.dp)
+                                .height(with(LocalDensity.current) { style.textStyle.lineHeight.toDp() } + 20.dp)
                                 .background(
                                     color = selector.color,
                                     shape = selector.shape
@@ -318,51 +293,37 @@ private fun TimePicker24Hour(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             PickerItem(
-                                state = hourPickerState,
                                 items = hourItems,
+                                state = hourPickerState,
                                 visibleItemsCount = visibleItemsCount,
-                                itemSpacing = itemSpacing,
-                                textStyle = textStyle,
-                                textColor = textColor,
+                                style = style,
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
                                 curveEffect = curveEffect,
                                 onValueChange = {
-                                    onPickerValueChange(
-                                        hourPickerState,
-                                        minutePickerState,
-                                        onValueChange
-                                    )
+                                    onPickerValueChange(hourPickerState, minutePickerState, onValueChange)
                                 }
                             )
 
                             Text(
                                 text = ":",
-                                style = textStyle,
-                                color = textColor
+                                style = style.textStyle,
+                                color = style.textColor
                             )
 
                             PickerItem(
-                                state = minutePickerState,
                                 items = minuteItems,
+                                state = minutePickerState,
                                 visibleItemsCount = visibleItemsCount,
-                                itemSpacing = itemSpacing,
-                                textStyle = textStyle,
-                                textColor = textColor,
+                                style = style,
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
-                                itemFormatter = { item ->
-                                    item.toString().padStart(2, '0')
-                                },
+                                itemFormatter = { it.toString().padStart(2, '0') },
                                 curveEffect = curveEffect,
                                 onValueChange = {
-                                    onPickerValueChange(
-                                        hourPickerState,
-                                        minutePickerState,
-                                        onValueChange
-                                    )
+                                    onPickerValueChange(hourPickerState, minutePickerState, onValueChange)
                                 }
                             )
                         }

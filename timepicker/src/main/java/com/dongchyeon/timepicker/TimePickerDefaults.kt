@@ -7,9 +7,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 object TimePickerDefaults {
+    @Composable
+    fun pickerStyle(
+        textStyle: TextStyle = MaterialTheme.typography.titleMedium,
+        textColor: Color = Color.White,
+        itemSpacing: Dp = 2.dp
+    ): PickerStyle {
+        return PickerStyle(
+            textStyle = textStyle,
+            textColor = textColor,
+            itemSpacing = itemSpacing
+        )
+    }
+
     @Composable
     fun pickerSelector(
         enabled: Boolean = true,
@@ -26,13 +40,17 @@ object TimePickerDefaults {
     }
 
     @Composable
-    fun itemLabel(
-        style: TextStyle = MaterialTheme.typography.titleMedium,
-        color: Color = Color.White
-    ): ItemLabel {
-        return ItemLabel(
-            style = style,
-            color = color
+    fun curveEffect(
+        alphaEnabled: Boolean = true,
+        minAlpha: Float = 0.2f,
+        scaleYEnabled: Boolean = true,
+        minScaleY: Float = 0.8f
+    ): CurveEffect {
+        return CurveEffect(
+            alphaEnabled = alphaEnabled,
+            minAlpha = minAlpha,
+            scaleYEnabled = scaleYEnabled,
+            minScaleY = minScaleY
         )
     }
 
@@ -41,42 +59,39 @@ object TimePickerDefaults {
 }
 
 @Immutable
-class PickerSelector(
-    val enabled: Boolean,
-    val shape: RoundedCornerShape,
-    val color: Color,
-    val border: BorderStroke?
+data class PickerStyle(
+    val textStyle: TextStyle,
+    val textColor: Color,
+    val itemSpacing: Dp
+)
+
+@Immutable
+data class CurveEffect(
+    val alphaEnabled: Boolean = true,
+    val minAlpha: Float = 0.2f,
+    val scaleYEnabled: Boolean = true,
+    val minScaleY: Float = 0.8f
 ) {
-    fun copy(
-        enabled: Boolean = this.enabled,
-        shape: RoundedCornerShape = this.shape,
-        color: Color = this.color,
-        border: BorderStroke? = this.border
-    ): PickerSelector {
-        return PickerSelector(
-            enabled = enabled,
-            shape = shape,
-            color = color,
-            border = border
-        )
+    fun calculateAlpha(distanceFromCenter: Float, maxDistance: Float): Float {
+        if (!alphaEnabled) return 1f
+        val ratio = (distanceFromCenter / maxDistance).coerceIn(0f, 1f)
+        return ((1f - ratio) * (1f - minAlpha) + minAlpha)
+    }
+
+    fun calculateScaleY(distanceFromCenter: Float, maxDistance: Float): Float {
+        if (!scaleYEnabled) return 1f
+        val ratio = (distanceFromCenter / maxDistance).coerceIn(0f, 1f)
+        return ((1f - ratio) * (1f - minScaleY) + minScaleY)
     }
 }
 
 @Immutable
-class ItemLabel(
-    val style: TextStyle,
-    val color: Color
-) {
-    fun copy(
-        style: TextStyle = this.style,
-        color: Color = this.color
-    ): ItemLabel {
-        return ItemLabel(
-            style = style,
-            color = color
-        )
-    }
-}
+data class PickerSelector(
+    val enabled: Boolean,
+    val shape: RoundedCornerShape,
+    val color: Color,
+    val border: BorderStroke?
+)
 
 enum class TimeFormat(val is24Hour: Boolean, val localeTimeFormat: LocaleTimeFormat) {
     DEFAULT(false, LocaleTimeFormat.ENGLISH),
