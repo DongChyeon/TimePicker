@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,15 +18,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.dongchyeon.timepicker.CurveEffect
+import com.dongchyeon.timepicker.PickerStyle
+import com.dongchyeon.timepicker.TimePickerDefaults
 import com.dongchyeon.timepicker.model.PickerState
 import com.dongchyeon.timepicker.model.rememberPickerState
 import com.dongchyeon.timepicker.ui.util.toPx
@@ -41,12 +39,11 @@ internal fun <T> PickerItem(
     items: List<T>,
     state: PickerState<T> = rememberPickerState(items = items),
     visibleItemsCount: Int,
+    style: PickerStyle,
     textModifier: Modifier = Modifier,
-    infiniteScroll: Boolean = true,
-    textStyle: TextStyle,
-    textColor: Color,
-    itemSpacing: Dp,
     itemFormatter: (T) -> String = { it.toString() },
+    infiniteScroll: Boolean,
+    curveEffect: CurveEffect,
     onValueChange: (T) -> Unit
 ) {
     val visibleItemsMiddle = visibleItemsCount / 2
@@ -104,7 +101,8 @@ internal fun <T> PickerItem(
             }
     }
 
-    val totalItemHeight = itemHeightDp + itemSpacing
+    val totalItemHeight = itemHeightDp + style.itemSpacing
+    val totalItemHeightPx = totalItemHeight.toPx()
 
     Box(modifier = modifier) {
         LazyColumn(
@@ -125,16 +123,11 @@ internal fun <T> PickerItem(
                 val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
                 val itemCenterOffset = itemInfo?.offset?.let { it + (itemInfo.size / 2) } ?: 0
 
-                val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset)
-                val maxDistance = totalItemHeight.toPx() * visibleItemsMiddle
+                val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset).toFloat()
+                val maxDistance = totalItemHeightPx * visibleItemsMiddle
 
-                val alpha = if (distanceFromCenter <= maxDistance) {
-                    ((maxDistance - distanceFromCenter) / maxDistance).coerceIn(0.2f, 1f)
-                } else {
-                    0.2f
-                }
-
-                val scaleY = 1f - (0.2f * (distanceFromCenter / maxDistance)).coerceIn(0f, 0.4f)
+                val alpha = curveEffect.calculateAlpha(distanceFromCenter, maxDistance)
+                val scaleY = curveEffect.calculateScaleY(distanceFromCenter, maxDistance)
 
                 val item = getItemForIndex(
                     index = index,
@@ -146,10 +139,10 @@ internal fun <T> PickerItem(
                 Text(
                     text = item?.let { itemFormatter(it) } ?: "",
                     maxLines = 1,
-                    style = textStyle,
-                    color = textColor.copy(alpha = alpha),
+                    style = style.textStyle,
+                    color = style.textColor.copy(alpha = alpha),
                     modifier = Modifier
-                        .padding(vertical = itemSpacing / 2)
+                        .padding(vertical = style.itemSpacing / 2)
                         .graphicsLayer(scaleY = scaleY)
                         .onSizeChanged { size -> itemHeightPixels = size.height }
                         .then(textModifier)
@@ -180,6 +173,10 @@ private fun getStartIndexForInfiniteScroll(
     visibleItemsMiddle: Int,
     startIndex: Int
 ): Int {
+    if (itemSize == 0) {
+        return listScrollMiddle - visibleItemsMiddle + startIndex
+    }
+
     return listScrollMiddle - listScrollMiddle % itemSize - visibleItemsMiddle + startIndex
 }
 
@@ -189,9 +186,9 @@ private fun PickerItemPreview() {
     PickerItem<Int>(
         items = (0..100).map { it },
         visibleItemsCount = 5,
-        textStyle = MaterialTheme.typography.bodyLarge,
-        textColor = Color.White,
-        itemSpacing = 8.dp,
+        style = TimePickerDefaults.pickerStyle(),
+        curveEffect = TimePickerDefaults.curveEffect(),
+        infiniteScroll = true,
         onValueChange = {}
     )
 }
