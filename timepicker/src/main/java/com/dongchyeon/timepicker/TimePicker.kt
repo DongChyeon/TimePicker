@@ -104,127 +104,115 @@ private fun TimePicker12Hour(
     var previousHour by remember { mutableIntStateOf(initialTime.hour) }
     val scope = rememberCoroutineScope()
 
-    Box(modifier = modifier.fillMaxWidth()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        SelectorBackground(
+            style = style,
+            selector = selector
+        )
+
+        Row(
+            modifier = Modifier.padding(horizontal = 50.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = modifier.fillMaxWidth()
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.Center)
-                                .padding(horizontal = 20.dp)
-                                .height(with(LocalDensity.current) { style.textStyle.lineHeight.toDp() } + 20.dp)
-                                .background(
-                                    color = selector.color,
-                                    shape = selector.shape
-                                )
-                                .then(
-                                    if (selector.border != null) {
-                                        Modifier.border(
-                                            border = selector.border,
-                                            shape = selector.shape
-                                        )
-                                    } else {
-                                        Modifier
-                                    }
-                                )
-                        )
+            PickerItem(
+                items = amPmItems,
+                state = amPmPickerState,
+                visibleItemsCount = visibleItemsCount,
+                style = style,
+                modifier = Modifier.weight(1f),
+                textModifier = Modifier.padding(8.dp),
+                infiniteScroll = false,
+                curveEffect = curveEffect,
+                onValueChange = {
+                    onPickerValueChange(
+                        amPmPickerState,
+                        hourPickerState,
+                        minutePickerState,
+                        localeTimeFormat,
+                        onValueChange
+                    )
+                }
+            )
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 50.dp),
-                            verticalAlignment = Alignment.CenterVertically
+            PickerItem(
+                items = hourItems,
+                state = hourPickerState,
+                visibleItemsCount = visibleItemsCount,
+                style = style,
+                modifier = Modifier.weight(1f),
+                textModifier = Modifier.padding(8.dp),
+                infiniteScroll = true,
+                curveEffect = curveEffect,
+                onValueChange = {
+                    onPickerValueChange(
+                        amPmPickerState,
+                        hourPickerState,
+                        minutePickerState,
+                        localeTimeFormat,
+                        onValueChange
+                    )
+                    scope.launch {
+                        val currentHour = hourPickerState.selectedItem
+                        val currentIndex = amPmPickerState.lazyListState.firstVisibleItemIndex % amPmItems.size
+                        val nextIndex = (currentIndex + 1) % amPmItems.size
+
+                        if ((currentHour == 12 && previousHour == 11) ||
+                            (currentHour == 11 && previousHour == 12)
                         ) {
-                            PickerItem(
-                                items = amPmItems,
-                                state = amPmPickerState,
-                                visibleItemsCount = visibleItemsCount,
-                                style = style,
-                                modifier = Modifier.weight(1f),
-                                textModifier = Modifier.padding(8.dp),
-                                infiniteScroll = false,
-                                curveEffect = curveEffect,
-                                onValueChange = {
-                                    onPickerValueChange(
-                                        amPmPickerState,
-                                        hourPickerState,
-                                        minutePickerState,
-                                        localeTimeFormat,
-                                        onValueChange
-                                    )
-                                }
-                            )
-
-                            PickerItem(
-                                items = hourItems,
-                                state = hourPickerState,
-                                visibleItemsCount = visibleItemsCount,
-                                style = style,
-                                modifier = Modifier.weight(1f),
-                                textModifier = Modifier.padding(8.dp),
-                                infiniteScroll = true,
-                                curveEffect = curveEffect,
-                                onValueChange = {
-                                    onPickerValueChange(
-                                        amPmPickerState,
-                                        hourPickerState,
-                                        minutePickerState,
-                                        localeTimeFormat,
-                                        onValueChange
-                                    )
-                                    scope.launch {
-                                        val currentHour = hourPickerState.selectedItem
-                                        val currentIndex = amPmPickerState.lazyListState.firstVisibleItemIndex % amPmItems.size
-                                        val nextIndex = (currentIndex + 1) % amPmItems.size
-
-                                        if ((currentHour == 12 && previousHour == 11) ||
-                                            (currentHour == 11 && previousHour == 12)
-                                        ) {
-                                            amPmPickerState.lazyListState.animateScrollToItem(nextIndex)
-                                        }
-                                        previousHour = currentHour
-                                    }
-                                }
-                            )
-
-                            PickerItem(
-                                items = minuteItems,
-                                state = minutePickerState,
-                                visibleItemsCount = visibleItemsCount,
-                                style = style,
-                                modifier = Modifier.weight(1f),
-                                textModifier = Modifier.padding(8.dp),
-                                infiniteScroll = true,
-                                itemFormatter = { it.toString().padStart(2, '0') },
-                                curveEffect = curveEffect,
-                                onValueChange = {
-                                    onPickerValueChange(
-                                        amPmPickerState,
-                                        hourPickerState,
-                                        minutePickerState,
-                                        localeTimeFormat,
-                                        onValueChange
-                                    )
-                                }
-                            )
+                            amPmPickerState.lazyListState.animateScrollToItem(nextIndex)
                         }
+                        previousHour = currentHour
                     }
                 }
-            }
+            )
+
+            PickerItem(
+                items = minuteItems,
+                state = minutePickerState,
+                visibleItemsCount = visibleItemsCount,
+                style = style,
+                modifier = Modifier.weight(1f),
+                textModifier = Modifier.padding(8.dp),
+                infiniteScroll = true,
+                itemFormatter = { it.toString().padStart(2, '0') },
+                curveEffect = curveEffect,
+                onValueChange = {
+                    onPickerValueChange(
+                        amPmPickerState,
+                        hourPickerState,
+                        minutePickerState,
+                        localeTimeFormat,
+                        onValueChange
+                    )
+                }
+            )
         }
     }
+}
+
+@Composable
+private fun SelectorBackground(
+    modifier: Modifier = Modifier,
+    style: PickerStyle,
+    selector: PickerSelector
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .height(with(LocalDensity.current) { style.textStyle.lineHeight.toDp() } + 20.dp)
+            .background(color = selector.color, shape = selector.shape)
+            .then(
+                if (selector.border != null) {
+                    Modifier.border(border = selector.border, shape = selector.shape)
+                } else {
+                    Modifier
+                }
+            )
+    )
 }
 
 @Composable
@@ -249,87 +237,55 @@ private fun TimePicker24Hour(
         items = minuteItems
     )
 
-    Box(modifier = modifier.fillMaxWidth()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        SelectorBackground(
+            style = style,
+            selector = selector
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 50.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = modifier.fillMaxWidth()
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.Center)
-                                .padding(horizontal = 20.dp)
-                                .height(with(LocalDensity.current) { style.textStyle.lineHeight.toDp() } + 20.dp)
-                                .background(
-                                    color = selector.color,
-                                    shape = selector.shape
-                                )
-                                .then(
-                                    if (selector.border != null) {
-                                        Modifier.border(
-                                            border = selector.border,
-                                            shape = selector.shape
-                                        )
-                                    } else {
-                                        Modifier
-                                    }
-                                )
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 50.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            PickerItem(
-                                items = hourItems,
-                                state = hourPickerState,
-                                visibleItemsCount = visibleItemsCount,
-                                style = style,
-                                modifier = Modifier.weight(1f),
-                                textModifier = Modifier.padding(8.dp),
-                                infiniteScroll = true,
-                                curveEffect = curveEffect,
-                                onValueChange = {
-                                    onPickerValueChange(hourPickerState, minutePickerState, onValueChange)
-                                }
-                            )
-
-                            Text(
-                                text = ":",
-                                style = style.textStyle,
-                                color = style.textColor
-                            )
-
-                            PickerItem(
-                                items = minuteItems,
-                                state = minutePickerState,
-                                visibleItemsCount = visibleItemsCount,
-                                style = style,
-                                modifier = Modifier.weight(1f),
-                                textModifier = Modifier.padding(8.dp),
-                                infiniteScroll = true,
-                                itemFormatter = { it.toString().padStart(2, '0') },
-                                curveEffect = curveEffect,
-                                onValueChange = {
-                                    onPickerValueChange(hourPickerState, minutePickerState, onValueChange)
-                                }
-                            )
-                        }
-                    }
+            PickerItem(
+                items = hourItems,
+                state = hourPickerState,
+                visibleItemsCount = visibleItemsCount,
+                style = style,
+                modifier = Modifier.weight(1f),
+                textModifier = Modifier.padding(8.dp),
+                infiniteScroll = true,
+                curveEffect = curveEffect,
+                onValueChange = {
+                    onPickerValueChange(hourPickerState, minutePickerState, onValueChange)
                 }
-            }
+            )
+
+            Text(
+                text = ":",
+                style = style.textStyle,
+                color = style.textColor
+            )
+
+            PickerItem(
+                items = minuteItems,
+                state = minutePickerState,
+                visibleItemsCount = visibleItemsCount,
+                style = style,
+                modifier = Modifier.weight(1f),
+                textModifier = Modifier.padding(8.dp),
+                infiniteScroll = true,
+                itemFormatter = { it.toString().padStart(2, '0') },
+                curveEffect = curveEffect,
+                onValueChange = {
+                    onPickerValueChange(hourPickerState, minutePickerState, onValueChange)
+                }
+            )
         }
     }
 }
