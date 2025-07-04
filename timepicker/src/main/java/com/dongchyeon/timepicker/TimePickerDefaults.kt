@@ -39,7 +39,6 @@ object TimePickerDefaults {
         )
     }
 
-    @Composable
     fun curveEffect(
         alphaEnabled: Boolean = true,
         minAlpha: Float = 0.2f,
