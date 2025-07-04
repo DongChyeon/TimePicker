@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dongchyeon.timepicker.model.PickerState
 import com.dongchyeon.timepicker.model.rememberPickerState
+import com.dongchyeon.timepicker.ui.CurveEffect
 import com.dongchyeon.timepicker.ui.PickerItem
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -45,6 +46,7 @@ fun TimePicker(
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     timeFormat: TimeFormat = TimePickerDefaults.timeFormat,
     selector: PickerSelector = TimePickerDefaults.pickerSelector(),
+    curveEffect: CurveEffect = CurveEffect(),
     onValueChange: (LocalTime) -> Unit
 ) {
     if (timeFormat.is24Hour) {
@@ -56,6 +58,7 @@ fun TimePicker(
             textColor = itemLabel.color,
             initialTime = initialTime,
             selector = selector,
+            curveEffect = curveEffect,
             onValueChange = onValueChange
         )
     } else {
@@ -68,6 +71,7 @@ fun TimePicker(
             initialTime = initialTime,
             localeTimeFormat = timeFormat.localeTimeFormat,
             selector = selector,
+            curveEffect = curveEffect,
             onValueChange = onValueChange
         )
     }
@@ -80,11 +84,37 @@ private fun TimePicker12Hour(
     visibleItemsCount: Int = 5,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     textColor: Color = Color.White,
-    initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
+    initialTime: LocalTime,
     localeTimeFormat: LocaleTimeFormat,
     selector: PickerSelector,
+    curveEffect: CurveEffect,
     onValueChange: (LocalTime) -> Unit
 ) {
+    val amPmItems = remember {
+        listOf(
+            TimePeriod.AM.getLabel(localeTimeFormat),
+            TimePeriod.PM.getLabel(localeTimeFormat)
+        )
+    }
+    val hourItems = remember { (1..12).toList() }
+    val minuteItems = remember { (0..59).toList() }
+
+    val amPmPickerState = rememberPickerState(
+        initialIndex = if (initialTime.hour < 12) 0 else 1,
+        items = amPmItems
+    )
+    val hourPickerState = rememberPickerState(
+        initialIndex = hourItems.indexOf(if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12),
+        items = hourItems
+    )
+    val minutePickerState = rememberPickerState(
+        initialIndex = minuteItems.indexOf(initialTime.minute),
+        items = minuteItems
+    )
+
+    var previousHour by remember { mutableIntStateOf(initialTime.hour) }
+    val scope = rememberCoroutineScope()
+
     Box(modifier = modifier.fillMaxWidth()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -97,32 +127,6 @@ private fun TimePicker12Hour(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    val amPmItems = remember {
-                        listOf(
-                            TimePeriod.AM.getLabel(localeTimeFormat),
-                            TimePeriod.PM.getLabel(localeTimeFormat)
-                        )
-                    }
-                    val hourItems = remember { (1..12).toList() }
-                    val minuteItems = remember { (0..59).toList() }
-
-                    val amPmPickerState = rememberPickerState(
-                        initialIndex = if (initialTime.hour < 12) 0 else 1,
-                        items = amPmItems
-                    )
-                    val hourPickerState = rememberPickerState(
-                        initialIndex = hourItems.indexOf(if (initialTime.hour % 12 == 0) 12 else initialTime.hour % 12),
-                        items = hourItems
-                    )
-                    val minutePickerState = rememberPickerState(
-                        initialIndex = minuteItems.indexOf(initialTime.minute),
-                        items = minuteItems
-                    )
-
-                    var previousHour by remember { mutableIntStateOf(initialTime.hour) }
-
-                    val scope = rememberCoroutineScope()
-
                     Box(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -164,6 +168,7 @@ private fun TimePicker12Hour(
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = false,
+                                curveEffect = curveEffect,
                                 onValueChange = {
                                     onPickerValueChange(
                                         amPmPickerState,
@@ -185,6 +190,7 @@ private fun TimePicker12Hour(
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
+                                curveEffect = curveEffect,
                                 onValueChange = {
                                     onPickerValueChange(
                                         amPmPickerState,
@@ -225,6 +231,7 @@ private fun TimePicker12Hour(
                                 itemFormatter = { item ->
                                     item.toString().padStart(2, '0')
                                 },
+                                curveEffect = curveEffect,
                                 onValueChange = {
                                     onPickerValueChange(
                                         amPmPickerState,
@@ -252,6 +259,7 @@ private fun TimePicker24Hour(
     textColor: Color = Color.White,
     initialTime: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     selector: PickerSelector,
+    curveEffect: CurveEffect,
     onValueChange: (LocalTime) -> Unit
 ) {
     val hourItems = remember { (0..23).toList() }
@@ -319,6 +327,7 @@ private fun TimePicker24Hour(
                                 modifier = Modifier.weight(1f),
                                 textModifier = Modifier.padding(8.dp),
                                 infiniteScroll = true,
+                                curveEffect = curveEffect,
                                 onValueChange = {
                                     onPickerValueChange(
                                         hourPickerState,
@@ -347,6 +356,7 @@ private fun TimePicker24Hour(
                                 itemFormatter = { item ->
                                     item.toString().padStart(2, '0')
                                 },
+                                curveEffect = curveEffect,
                                 onValueChange = {
                                     onPickerValueChange(
                                         hourPickerState,

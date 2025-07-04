@@ -37,16 +37,17 @@ import kotlin.math.abs
 
 @Composable
 internal fun <T> PickerItem(
-    modifier: Modifier = Modifier,
     items: List<T>,
     state: PickerState<T> = rememberPickerState(items = items),
     visibleItemsCount: Int,
+    itemFormatter: (T) -> String = { it.toString() },
+    modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
-    infiniteScroll: Boolean = true,
     textStyle: TextStyle,
     textColor: Color,
     itemSpacing: Dp,
-    itemFormatter: (T) -> String = { it.toString() },
+    infiniteScroll: Boolean = true,
+    curveEffect: CurveEffect = CurveEffect(),
     onValueChange: (T) -> Unit
 ) {
     val visibleItemsMiddle = visibleItemsCount / 2
@@ -125,16 +126,11 @@ internal fun <T> PickerItem(
                 val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
                 val itemCenterOffset = itemInfo?.offset?.let { it + (itemInfo.size / 2) } ?: 0
 
-                val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset)
+                val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset).toFloat()
                 val maxDistance = totalItemHeight.toPx() * visibleItemsMiddle
 
-                val alpha = if (distanceFromCenter <= maxDistance) {
-                    ((maxDistance - distanceFromCenter) / maxDistance).coerceIn(0.2f, 1f)
-                } else {
-                    0.2f
-                }
-
-                val scaleY = 1f - (0.2f * (distanceFromCenter / maxDistance)).coerceIn(0f, 0.4f)
+                val alpha = curveEffect.calculateAlpha(distanceFromCenter, maxDistance)
+                val scaleY = curveEffect.calculateScaleY(distanceFromCenter, maxDistance)
 
                 val item = getItemForIndex(
                     index = index,
