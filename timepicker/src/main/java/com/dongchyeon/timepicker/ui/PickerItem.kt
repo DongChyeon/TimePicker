@@ -173,6 +173,10 @@ private fun getStartIndexForInfiniteScroll(
     visibleItemsMiddle: Int,
     startIndex: Int
 ): Int {
+    if (itemSize == 0) {
+        return listScrollMiddle - visibleItemsMiddle + startIndex
+    }
+
     return listScrollMiddle - listScrollMiddle % itemSize - visibleItemsMiddle + startIndex
 }
 
