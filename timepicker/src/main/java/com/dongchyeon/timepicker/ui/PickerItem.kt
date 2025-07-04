@@ -102,6 +102,7 @@ internal fun <T> PickerItem(
     }
 
     val totalItemHeight = itemHeightDp + style.itemSpacing
+    val totalItemHeightPx = totalItemHeight.toPx()
 
     Box(modifier = modifier) {
         LazyColumn(
@@ -123,7 +124,7 @@ internal fun <T> PickerItem(
                 val itemCenterOffset = itemInfo?.offset?.let { it + (itemInfo.size / 2) } ?: 0
 
                 val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset).toFloat()
-                val maxDistance = totalItemHeight.toPx() * visibleItemsMiddle
+                val maxDistance = totalItemHeightPx * visibleItemsMiddle
 
                 val alpha = curveEffect.calculateAlpha(distanceFromCenter, maxDistance)
                 val scaleY = curveEffect.calculateScaleY(distanceFromCenter, maxDistance)
