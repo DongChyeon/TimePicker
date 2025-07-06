@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.dongchyeon.timepicker"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
@@ -59,7 +59,7 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates("io.github.dongchyeon", "time-picker", "1.0.1")
+    coordinates("io.github.dongchyeon", "time-picker", "1.1.1")
 
     pom {
         name.set("TimePicker")
