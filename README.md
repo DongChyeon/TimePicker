@@ -19,11 +19,11 @@ It also provides full localization support and event handling for custom behavio
 ## Features
 
 #### 1. Customizable Styling
-- **AM/PM Configuration**: Customize the text style, color, and layout for AM and PM labels.
-- **Time Configuration**: Adjust the styling for hours, minutes, and seconds (for the 24-hour format).
-- **Picker Selector Configuration**: Customize the appearance of the time picker using background colors, border shapes, and more.
-- **Label Styling**: Fully customize the labels for hours, minutes, and AM/PM text, including text size, font, color.
-- **Visible Items Count**: Control the number of visible items in the time picker, allowing for a more compact or expansive display depending on the user’s preferences.
+- **AM/PM Configuration**: Customize AM/PM label text style, color, and layout.
+- **Time Label Styling**: Adjust hour and minute text styles, colors, and item spacing via `PickerStyle`.
+- **Picker Selector Configuration**: Modify the appearance of the picker selector, including background color, shape, and border.
+- **Curve Effect**: Apply a curve effect to the picker list for a 3D cylindrical visual. Options include alpha fading and vertical scaling.
+- **Visible Items Count**: Control the number of visible items for compact or expansive display.
 
 #### 2. Localization Support
 - Supports both English (EN) and Korean (KO) locales.
@@ -89,28 +89,25 @@ TimePicker(
 
 ### Customized Options
 
-#### 1. Time Label Configuration
+#### 1. Picker Style Configuration
+
+PickerStyle allows you to customize text styles, colors, and item spacing.
 
 ```kotlin
 TimePicker(
     // ...
-    itemLabel = TimePickerDefaults.itemLabel().copy(
-        style = MaterialTheme.typography.bodyLarge
-    ),
-    // ...
-)
-
-TimePicker(
-    // ...
-    itemLabel = ItemLabel(
-        style = MaterialTheme.typography.titleMedium,
-        color = Color.White
+    style = TimePickerDefaults.pickerStyle(
+        textStyle = MaterialTheme.typography.bodyLarge,
+        textColor = Color.White,
+        itemSpacing = 12.dp
     ),
     // ...
 )
 ```
 
 #### 2. AM/PM Locale Configuraiton
+
+Configure the time picker to display AM/PM labels in either English or Korean.
 
 ```kotlin
 TimePicker(
@@ -126,7 +123,9 @@ TimePicker(
 )
 ```
 
-#### 3. Selector Configuration
+#### 3. Picker Selector Configuration
+
+Modify selector color, shape, and border.
 
 ```kotlin
 TimePicker(
@@ -142,10 +141,32 @@ TimePicker(
 
 #### 4. Visible Items Count Configuration
 
+Control how many items are shown in the picker at once.
+
 ```kotlin
 TimePicker(
     // ...
     visibleItemsCount = 7
+    // ...
+)
+```
+
+#### 5. Curve Effect Configuration
+
+Apply a curve effect to the picker for a 3D cylindrical visual.
+Options include:
+- Enable/disable alpha fading (alphaEnabled, minAlpha)
+- Enable/disable vertical scaling (scaleYEnabled, minScaleY)
+
+```kotlin
+TimePicker(
+    // ...
+    curveEffect = TimePickerDefaults.curveEffect(
+        alphaEnabled = true,
+        minAlpha = 0.3f,
+        scaleYEnabled = true,
+        minScaleY = 0.85f
+    )
     // ...
 )
 ```
