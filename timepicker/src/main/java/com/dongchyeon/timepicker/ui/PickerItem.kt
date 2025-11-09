@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -104,6 +105,14 @@ internal fun <T> PickerItem(
     val totalItemHeight = itemHeightDp + style.itemSpacing
     val totalItemHeightPx = totalItemHeight.toPx()
 
+    val layoutInfo by rememberUpdatedState(listState.layoutInfo)
+
+    val itemInfoMap = remember(layoutInfo) {
+        layoutInfo.visibleItemsInfo.associateBy { it.index }
+    }
+
+    val viewportCenterOffset = layoutInfo.viewportStartOffset + (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2
+
     Box(modifier = modifier) {
         LazyColumn(
             state = listState,
@@ -115,20 +124,6 @@ internal fun <T> PickerItem(
                 .pointerInput(Unit) { detectVerticalDragGestures { change, _ -> change.consume() } }
         ) {
             items(listScrollCount, key = { index -> index }) { index ->
-                val layoutInfo by remember { derivedStateOf { listState.layoutInfo } }
-
-                val viewportCenterOffset = layoutInfo.viewportStartOffset +
-                    (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2
-
-                val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
-                val itemCenterOffset = itemInfo?.offset?.let { it + (itemInfo.size / 2) } ?: 0
-
-                val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset).toFloat()
-                val maxDistance = totalItemHeightPx * visibleItemsMiddle
-
-                val alpha = curveEffect.calculateAlpha(distanceFromCenter, maxDistance)
-                val scaleY = curveEffect.calculateScaleY(distanceFromCenter, maxDistance)
-
                 val item = getItemForIndex(
                     index = index,
                     items = items,
@@ -140,11 +135,17 @@ internal fun <T> PickerItem(
                     text = item?.let { itemFormatter(it) } ?: "",
                     maxLines = 1,
                     style = style.textStyle,
-                    color = style.textColor.copy(alpha = alpha),
+                    color = style.textColor,
                     modifier = Modifier
                         .padding(vertical = style.itemSpacing / 2)
-                        .graphicsLayer(scaleY = scaleY)
-                        .onSizeChanged { size -> itemHeightPixels = size.height }
+                        .curvedPickerEffect(
+                            index = index,
+                            viewportCenterOffset = viewportCenterOffset,
+                            itemInfoMap = itemInfoMap,
+                            totalItemHeightPx = totalItemHeightPx,
+                            visibleItemsMiddle = visibleItemsMiddle,
+                            curveEffect = curveEffect
+                        ).onSizeChanged { size -> itemHeightPixels = size.height }
                         .then(textModifier)
                 )
             }
@@ -178,6 +179,27 @@ private fun getStartIndexForInfiniteScroll(
     }
 
     return listScrollMiddle - listScrollMiddle % itemSize - visibleItemsMiddle + startIndex
+}
+
+fun Modifier.curvedPickerEffect(
+    index: Int,
+    viewportCenterOffset: Int,
+    itemInfoMap: Map<Int, LazyListItemInfo>,
+    totalItemHeightPx: Float,
+    visibleItemsMiddle: Int,
+    curveEffect: CurveEffect
+): Modifier = graphicsLayer {
+    val itemInfo = itemInfoMap[index]
+    val itemCenterOffset = itemInfo?.let { it.offset + (it.size / 2) } ?: 0
+
+    val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset).toFloat()
+    val maxDistance = totalItemHeightPx * visibleItemsMiddle
+
+    val alpha = curveEffect.calculateAlpha(distanceFromCenter, maxDistance)
+    val scaleY = curveEffect.calculateScaleY(distanceFromCenter, maxDistance)
+
+    this.alpha = alpha
+    this.scaleY = scaleY
 }
 
 @Composable
