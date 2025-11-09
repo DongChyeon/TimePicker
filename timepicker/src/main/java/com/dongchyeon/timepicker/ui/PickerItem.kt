@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -104,6 +105,14 @@ internal fun <T> PickerItem(
     val totalItemHeight = itemHeightDp + style.itemSpacing
     val totalItemHeightPx = totalItemHeight.toPx()
 
+    val layoutInfo by rememberUpdatedState(listState.layoutInfo)
+
+    val itemInfoMap = remember(layoutInfo) {
+        layoutInfo.visibleItemsInfo.associateBy { it.index }
+    }
+
+    val viewportCenterOffset = layoutInfo.viewportStartOffset + (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2
+
     Box(modifier = modifier) {
         LazyColumn(
             state = listState,
@@ -129,8 +138,14 @@ internal fun <T> PickerItem(
                     color = style.textColor,
                     modifier = Modifier
                         .padding(vertical = style.itemSpacing / 2)
-                        .curvedPickerEffect(listState, index, curveEffect, totalItemHeightPx, visibleItemsMiddle)
-                        .onSizeChanged { size -> itemHeightPixels = size.height }
+                        .curvedPickerEffect(
+                            index = index,
+                            viewportCenterOffset = viewportCenterOffset,
+                            itemInfoMap = itemInfoMap,
+                            totalItemHeightPx = totalItemHeightPx,
+                            visibleItemsMiddle = visibleItemsMiddle,
+                            curveEffect = curveEffect
+                        ).onSizeChanged { size -> itemHeightPixels = size.height }
                         .then(textModifier)
                 )
             }
@@ -166,22 +181,25 @@ private fun getStartIndexForInfiniteScroll(
     return listScrollMiddle - listScrollMiddle % itemSize - visibleItemsMiddle + startIndex
 }
 
-private fun Modifier.curvedPickerEffect(
-    listState: LazyListState,
+fun Modifier.curvedPickerEffect(
     index: Int,
-    curveEffect: CurveEffect,
+    viewportCenterOffset: Int,
+    itemInfoMap: Map<Int, LazyListItemInfo>,
     totalItemHeightPx: Float,
     visibleItemsMiddle: Int,
+    curveEffect: CurveEffect
 ): Modifier = graphicsLayer {
-    val layoutInfo = listState.layoutInfo
-    val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
-    val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
-    val itemCenter = itemInfo?.offset?.plus(itemInfo.size / 2) ?: 0
-    val distance = abs(viewportCenter - itemCenter).toFloat()
+    val itemInfo = itemInfoMap[index]
+    val itemCenterOffset = itemInfo?.let { it.offset + (it.size / 2) } ?: 0
+
+    val distanceFromCenter = abs(viewportCenterOffset - itemCenterOffset).toFloat()
     val maxDistance = totalItemHeightPx * visibleItemsMiddle
 
-    alpha = curveEffect.calculateAlpha(distance, maxDistance)
-    scaleY = curveEffect.calculateScaleY(distance, maxDistance)
+    val alpha = curveEffect.calculateAlpha(distanceFromCenter, maxDistance)
+    val scaleY = curveEffect.calculateScaleY(distanceFromCenter, maxDistance)
+
+    this.alpha = alpha
+    this.scaleY = scaleY
 }
 
 @Composable
